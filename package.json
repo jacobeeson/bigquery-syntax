@@ -1,0 +1,64 @@
+{
+  "name": "bigquery-syntax",
+  "displayName": "BigQuery Syntax Highlighting",
+  "description": "Accurate syntax highlighting for BigQuery Standard SQL",
+  "version": "1.0.0",
+  "publisher": "jacobeeson",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "bigquery",
+    "sql",
+    "gcp",
+    "google cloud",
+    "syntax highlighting",
+    "standard sql"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacobeeson/bigquery-syntax"
+  },
+  "bugs": {
+    "url": "https://github.com/jacobeeson/bigquery-syntax/issues"
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#4285F4",
+    "theme": "dark"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "bigquery",
+        "aliases": [
+          "BigQuery SQL",
+          "BigQuery",
+          "bq"
+        ],
+        "extensions": [
+          ".bq",
+          ".bqsql"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bigquery",
+        "scopeName": "source.sql.bigquery",
+        "path": "./syntaxes/bigquery.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "echo \"See tests/README.md for testing instructions\"",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {}
+}

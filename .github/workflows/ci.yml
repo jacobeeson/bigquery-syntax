@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-grammar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate grammar JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('syntaxes/bigquery.tmLanguage.json', 'utf8'))"

@@ -1,0 +1,736 @@
+-- =============================================================================
+-- EDGE CASES TEST FILE
+-- Tests edge cases and newly added function categories for syntax highlighting
+-- =============================================================================
+
+-- =============================================================================
+-- SECTION 1: NEW FUNCTION CATEGORIES
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- NET FUNCTIONS
+-- -----------------------------------------------------------------------------
+SELECT
+  NET.HOST('https://example.com/path') AS host,
+  NET.PUBLIC_SUFFIX('www.example.co.uk') AS suffix,
+  NET.REG_DOMAIN('news.example.com') AS domain,
+  NET.IP_TO_STRING(NET.IP_FROM_STRING('192.168.1.1')) AS ip_roundtrip,
+  NET.IP_NET_MASK(4, 24) AS netmask,
+  NET.IP_TRUNC(NET.IP_FROM_STRING('192.168.1.100'), 24) AS truncated,
+  NET.SAFE_IP_FROM_STRING('not-an-ip') AS safe_ip;
+
+-- -----------------------------------------------------------------------------
+-- RANGE FUNCTIONS
+-- -----------------------------------------------------------------------------
+SELECT
+  RANGE_START(date_range) AS range_start,
+  RANGE_END(date_range) AS range_end,
+  RANGE_OVERLAPS(range1, range2) AS overlaps
+FROM table_with_ranges
+WHERE RANGE_CONTAINS(date_range, CURRENT_DATE());
+
+SELECT
+  RANGE_INTERSECT(range_a, range_b) AS intersection,
+  GENERATE_RANGE_ARRAY(
+    RANGE(DATE '2024-01-01', DATE '2024-12-31'),
+    INTERVAL 1 MONTH
+  ) AS monthly_ranges
+FROM ranges_table;
+
+-- -----------------------------------------------------------------------------
+-- INTERVAL FUNCTIONS
+-- -----------------------------------------------------------------------------
+SELECT
+  JUSTIFY_DAYS(INTERVAL 35 DAY) AS justified_days,
+  JUSTIFY_HOURS(INTERVAL 25 HOUR) AS justified_hours,
+  JUSTIFY_INTERVAL(INTERVAL '1-2 3 4:5:6' YEAR TO SECOND) AS justified,
+  MAKE_INTERVAL(1, 2, 3, 4, 5, 6) AS constructed_interval;
+
+-- -----------------------------------------------------------------------------
+-- TIME SERIES FUNCTIONS
+-- -----------------------------------------------------------------------------
+SELECT
+  DATE_BUCKET(sale_date, INTERVAL 1 WEEK) AS week_bucket,
+  TIMESTAMP_BUCKET(created_at, INTERVAL 1 HOUR) AS hour_bucket,
+  DATETIME_BUCKET(event_time, INTERVAL 15 MINUTE) AS quarter_hour
+FROM sales;
+
+SELECT * FROM GAP_FILL(
+  TABLE timeseries_data,
+  ts_column => timestamp_col,
+  bucket_width => INTERVAL 1 DAY,
+  value_columns => [('temperature', 'linear')]
+);
+
+-- -----------------------------------------------------------------------------
+-- TEXT ANALYSIS FUNCTIONS
+-- -----------------------------------------------------------------------------
+SELECT
+  TEXT_ANALYZE(description, analyzer => 'LOG_ANALYZER') AS tokens,
+  BAG_OF_WORDS(tokens) AS word_counts,
+  TF_IDF(tokens) AS tfidf_scores
+FROM documents;
+
+-- -----------------------------------------------------------------------------
+-- KLL QUANTILE FUNCTIONS (dot notation)
+-- -----------------------------------------------------------------------------
+SELECT
+  KLL_QUANTILES.INIT_INT64(value, 1000) AS sketch,
+  KLL_QUANTILES.INIT_FLOAT64(float_val, 500) AS float_sketch,
+  KLL_QUANTILES.INIT_UINT64(unsigned_val, 100) AS uint_sketch
+FROM metrics;
+
+SELECT
+  KLL_QUANTILES.MERGE_PARTIAL(sketch) AS merged,
+  KLL_QUANTILES.MERGE_POINT_INT64(sketch, 0.5) AS median,
+  KLL_QUANTILES.EXTRACT_FLOAT64(merged, 5) AS quantiles,
+  KLL_QUANTILES.EXTRACT_INT64(int_sketch, 10) AS int_quantiles,
+  KLL_QUANTILES.EXTRACT_UINT64(uint_sketch, 4) AS uint_quantiles
+FROM metric_sketches
+GROUP BY dimension;
+
+-- -----------------------------------------------------------------------------
+-- DLP FUNCTIONS
+-- -----------------------------------------------------------------------------
+SELECT
+  DLP_DETERMINISTIC_ENCRYPT(
+    ssn,
+    KEYS.KEYSET_CHAIN('gcp-kms://key', wrapped_keyset),
+    ''
+  ) AS encrypted_ssn,
+  DLP_DETERMINISTIC_DECRYPT(
+    encrypted_ssn,
+    KEYS.KEYSET_CHAIN('gcp-kms://key', wrapped_keyset),
+    ''
+  ) AS decrypted_ssn,
+  DLP_KEY_CHAIN(kms_resource, wrapped_key) AS key_chain
+FROM pii_table;
+
+-- -----------------------------------------------------------------------------
+-- FEDERATED QUERY
+-- -----------------------------------------------------------------------------
+SELECT * FROM EXTERNAL_QUERY(
+  'connection_id',
+  'SELECT * FROM postgres_table WHERE active = true'
+);
+
+SELECT * FROM EXTERNAL_QUERY(
+  'projects/my-project/locations/us/connections/my-connection',
+  '''SELECT id, name, created_at
+     FROM users
+     WHERE created_at > NOW() - INTERVAL '7 days' '''
+);
+
+
+-- =============================================================================
+-- SECTION 2: PATCHED EXISTING FUNCTIONS
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Aggregate additions
+-- -----------------------------------------------------------------------------
+SELECT
+  MAX_BY(product_name, revenue) AS top_product,
+  MIN_BY(product_name, revenue) AS bottom_product,
+  MAX_BY(product_name, revenue, 5) AS top_5_products,
+  MIN_BY(product_name, revenue, 3) AS bottom_3_products
+FROM sales
+GROUP BY category;
+
+-- -----------------------------------------------------------------------------
+-- Math additions (vector distance)
+-- -----------------------------------------------------------------------------
+SELECT
+  COSINE_DISTANCE(embedding1, embedding2) AS cosine_dist,
+  EUCLIDEAN_DISTANCE(vector_a, vector_b) AS euclidean_dist,
+  DOT_PRODUCT(vec1, vec2) AS dot_prod,
+  MANHATTAN_DISTANCE(point_a, point_b) AS manhattan_dist,
+  L1_NORM(vector) AS l1,
+  L2_NORM(vector) AS l2
+FROM embeddings;
+
+-- -----------------------------------------------------------------------------
+-- Geography additions
+-- -----------------------------------------------------------------------------
+SELECT
+  ST_GEOMETRYTYPE(geog) AS geom_type,
+  ST_LINESUBSTRING(line, 0.25, 0.75) AS segment,
+  ST_LINELOCATEPOINT(line, point) AS location_fraction,
+  ST_LINEINTERPOLATEPOINT(line, 0.5) AS midpoint,
+  ST_POINTN(line, 2) AS second_point,
+  ST_STARTPOINT(line) AS start_pt,
+  ST_ENDPOINT(line) AS end_pt
+FROM geo_table;
+
+-- -----------------------------------------------------------------------------
+-- JSON addition
+-- -----------------------------------------------------------------------------
+SELECT
+  JSON_FLATTEN(nested_json, '$') AS flattened,
+  JSON_KEYS(json_obj) AS keys,
+  JSON_DEPTH(complex_json) AS depth
+FROM json_table;
+
+-- -----------------------------------------------------------------------------
+-- Utility additions
+-- -----------------------------------------------------------------------------
+SELECT
+  TYPEOF(ambiguous_column) AS detected_type,
+  PARSE_BIGNUMERIC('123456789.123456789') AS big_num,
+  SESSION_USER() AS current_user,
+  GENERATE_UUID() AS new_uuid
+FROM mixed_data;
+
+-- -----------------------------------------------------------------------------
+-- SEARCH function
+-- -----------------------------------------------------------------------------
+SELECT * FROM dataset.table
+WHERE SEARCH(text_column, 'search query');
+
+SELECT * FROM dataset.documents
+WHERE SEARCH(
+  (title, body, tags),
+  'machine learning',
+  analyzer => 'LOG_ANALYZER'
+);
+
+-- -----------------------------------------------------------------------------
+-- Additional KEYS functions
+-- -----------------------------------------------------------------------------
+SELECT
+  KEYS.KEYSET_LENGTH(keyset) AS key_count,
+  KEYS.NEW_WRAPPED_KEYSET(kms_key, 'AEAD_AES_GCM_256') AS wrapped,
+  KEYS.REWRAP_KEYSET(old_kms_key, new_kms_key, wrapped_keyset) AS rewrapped,
+  KEYS.ROTATE_WRAPPED_KEYSET(kms_key, wrapped_keyset, 'AEAD_AES_GCM_256') AS rotated,
+  KEYS.KEYSET_TO_JSON(keyset) AS json_keyset,
+  KEYS.KEYSET_FROM_JSON(json_string) AS parsed_keyset
+FROM keysets;
+
+
+-- =============================================================================
+-- SECTION 3: DOT-NOTATION EDGE CASES
+-- =============================================================================
+
+-- Mixed case dot notation (all should highlight as functions)
+SELECT
+  net.host(url) AS h1,
+  NET.HOST(url) AS h2,
+  Net.Host(url) AS h3,
+  hll_count.init(col) AS hll1,
+  HLL_COUNT.INIT(col) AS hll2,
+  Hll_Count.Merge(sketch) AS hll3,
+  kll_quantiles.extract_int64(sketch, 10) AS kll1,
+  KLL_QUANTILES.EXTRACT_INT64(sketch, 10) AS kll2,
+  Kll_Quantiles.Extract_Int64(sketch, 10) AS kll3;
+
+-- All dot-notation function families
+SELECT
+  -- HLL_COUNT family
+  HLL_COUNT.INIT(value) AS hll_init,
+  HLL_COUNT.MERGE(sketch) AS hll_merge,
+  HLL_COUNT.MERGE_PARTIAL(sketch) AS hll_partial,
+  HLL_COUNT.EXTRACT(sketch) AS hll_extract,
+
+  -- APPROX family
+  APPROX_COUNT_DISTINCT(value) AS approx_distinct,
+  APPROX_QUANTILES(value, 100) AS approx_q,
+  APPROX_TOP_COUNT(category, 10) AS top_10,
+  APPROX_TOP_SUM(item, weight, 5) AS top_weighted,
+
+  -- KEYS family
+  KEYS.NEW_KEYSET('AEAD_AES_GCM_256') AS new_ks,
+  KEYS.ADD_KEY_FROM_RAW_BYTES(keyset, 'AES_GCM', raw) AS added,
+
+  -- ST_ geography (not dot notation but similar)
+  ST_GEOGPOINT(-122.4, 37.8) AS point,
+  ST_MAKELINE(point1, point2) AS line;
+
+
+-- =============================================================================
+-- SECTION 4: STRING LITERAL EDGE CASES
+-- =============================================================================
+
+-- All string types
+SELECT
+  'single quoted' AS s1,
+  "double quoted" AS s2,
+  '''multi
+  line
+  single''' AS s3,
+  """multi
+  line
+  double""" AS s4,
+  r'raw string with \ backslash' AS s5,
+  r"raw double with \ backslash" AS s6,
+  b'byte string' AS s7,
+  b"byte double" AS s8,
+  rb'raw bytes' AS s9,
+  br"also raw bytes" AS s10;
+
+-- Raw string edge cases
+SELECT
+  R'case insensitive raw' AS r1,
+  B'case insensitive bytes' AS b1,
+  RB'case insensitive raw bytes' AS rb1,
+  BR'also works' AS br1;
+
+-- Triple-quoted with embedded quotes
+SELECT
+  '''It's a test''' AS embedded_single,
+  """She said "hello" """ AS embedded_double,
+  '''Line 1
+  Line 2 with 'quotes'
+  Line 3''' AS multi_with_quotes;
+
+-- Escape sequences
+SELECT
+  'tab\there' AS esc1,
+  'newline\nhere' AS esc2,
+  'carriage\rreturn' AS esc3,
+  'unicode\u0041char' AS esc4,
+  'hex\x41char' AS esc5,
+  'escaped\'quote' AS esc6,
+  'escaped\\backslash' AS esc7,
+  'null\0char' AS esc8;
+
+-- Adjacent strings (should not concatenate in BigQuery)
+SELECT 'first' 'second' AS adjacent;
+
+
+-- =============================================================================
+-- SECTION 5: COMMENT EDGE CASES
+-- =============================================================================
+
+-- Single line comment
+# Hash comment (BigQuery supports this)
+/* Block comment */
+SELECT /* inline comment */ col FROM t;
+
+/*
+  Multi-line
+  block comment
+  with * asterisks * inside
+*/
+
+-- Nested-looking comments (outer only counts)
+/* outer /* not actually nested */ still comment? */ SELECT 1;
+
+SELECT
+  -- Comment after code
+  column1, # Another style
+  column2  -- End of line
+FROM table_name;
+
+-- Comment with special characters
+-- SELECT * FROM table; (commented out SQL)
+# TODO: fix this later
+/*
+ * Formatted block comment
+ * with leading asterisks
+ */
+
+-- Empty comments
+--
+#
+/**/
+
+
+-- =============================================================================
+-- SECTION 6: IDENTIFIER EDGE CASES
+-- =============================================================================
+
+-- Backtick quoted identifiers
+SELECT
+  `column-with-dashes`,
+  `project.dataset.table`,
+  `column with spaces`,
+  `123startswithnumber`,
+  `SELECT`,  -- Reserved word as identifier
+  `weird``backtick`,  -- Escaped backtick
+  `🎉emoji🎉`  -- Unicode in identifier
+FROM `project-id.dataset_name.table_name`;
+
+-- Fully qualified names
+SELECT *
+FROM `my-project-123.my_dataset.my_table`
+WHERE `my-project-123.my_dataset.my_table`.column = 1;
+
+-- Parameters and system variables
+SELECT
+  @named_parameter,
+  @param_123,
+  @_underscore_param,
+  @@dataset_id,
+  @@project_id,
+  @@time_zone,
+  @@dataset_project_id;
+
+-- Pseudocolumns
+SELECT
+  _TABLE_SUFFIX,
+  _PARTITIONTIME,
+  _PARTITIONDATE,
+  _FILE_NAME,
+  _ROW_TIMESTAMP
+FROM `project.dataset.table_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231';
+
+-- Case sensitivity in identifiers
+SELECT
+  myColumn,
+  MyColumn,
+  MYCOLUMN,
+  my_column,
+  MY_COLUMN
+FROM MyTable;
+
+
+-- =============================================================================
+-- SECTION 7: NUMERIC LITERAL EDGE CASES
+-- =============================================================================
+
+SELECT
+  -- Integers
+  123 AS integer_pos,
+  -456 AS integer_neg,
+  +789 AS integer_explicit_pos,
+  0 AS zero,
+
+  -- Floats
+  3.14159 AS float_standard,
+  .5 AS leading_dot,
+  2. AS trailing_dot,
+  -0.001 AS negative_float,
+
+  -- Scientific notation
+  1e10 AS sci_positive_exp,
+  1E10 AS sci_upper_e,
+  1.5e-3 AS sci_negative_exp,
+  2.5E+10 AS sci_explicit_positive,
+  .5e2 AS sci_leading_dot,
+
+  -- Hexadecimal
+  0x1A2B AS hex_lower,
+  0XDEADBEEF AS hex_upper,
+  0x0 AS hex_zero,
+  0xFFFFFFFF AS hex_max_32,
+
+  -- Large numbers
+  9223372036854775807 AS max_int64,
+  -9223372036854775808 AS min_int64,
+
+  -- NUMERIC/BIGNUMERIC literals
+  NUMERIC '123.456' AS numeric_lit,
+  BIGNUMERIC '12345678901234567890.12345678901234567890' AS bignumeric_lit;
+
+
+-- =============================================================================
+-- SECTION 8: COMPLEX NESTED EXPRESSIONS
+-- =============================================================================
+
+-- Deeply nested function calls
+SELECT
+  ARRAY_TO_STRING(
+    ARRAY_AGG(
+      DISTINCT UPPER(TRIM(name))
+      ORDER BY UPPER(TRIM(name))
+    ),
+    ', '
+  ) AS aggregated_names
+FROM (
+  SELECT JSON_VALUE(data, '$.name') AS name
+  FROM UNNEST(JSON_QUERY_ARRAY(response, '$.results')) AS data
+);
+
+-- CASE with function calls
+SELECT
+  CASE
+    WHEN ST_DWITHIN(location, ST_GEOGPOINT(-122.4, 37.8), 1000) THEN 'near'
+    WHEN ST_DISTANCE(location, ST_GEOGPOINT(-122.4, 37.8)) < 5000 THEN 'medium'
+    ELSE 'far'
+  END AS distance_category
+FROM locations;
+
+-- Nested CASE expressions
+SELECT
+  CASE category
+    WHEN 'A' THEN
+      CASE WHEN value > 100 THEN 'A-high' ELSE 'A-low' END
+    WHEN 'B' THEN
+      CASE WHEN value > 50 THEN 'B-high' ELSE 'B-low' END
+    ELSE 'other'
+  END AS nested_case
+FROM data;
+
+-- Window functions with frames
+SELECT
+  id,
+  value,
+  AVG(value) OVER (
+    PARTITION BY category
+    ORDER BY timestamp
+    ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+  ) AS moving_avg,
+  FIRST_VALUE(value) OVER (
+    ORDER BY timestamp
+    RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  ) AS first_val,
+  LAST_VALUE(value) OVER (
+    ORDER BY timestamp
+    ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING
+  ) AS last_val,
+  NTH_VALUE(value, 2) OVER (
+    PARTITION BY category
+    ORDER BY timestamp
+    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  ) AS second_val;
+
+-- Complex JOIN with subqueries
+SELECT
+  a.id,
+  b.details,
+  c.metrics
+FROM (
+  SELECT id, ARRAY_AGG(STRUCT(col1, col2)) AS nested
+  FROM table1
+  GROUP BY id
+) a
+LEFT JOIN (
+  SELECT
+    id,
+    JSON_OBJECT('key1', val1, 'key2', val2) AS details
+  FROM table2
+) b ON a.id = b.id
+CROSS JOIN UNNEST(a.nested) AS c;
+
+-- CTE with multiple levels
+WITH
+  base AS (
+    SELECT id, value, DATE_TRUNC(timestamp, MONTH) AS month
+    FROM raw_data
+    WHERE value IS NOT NULL
+  ),
+  aggregated AS (
+    SELECT
+      month,
+      COUNT(*) AS cnt,
+      SUM(value) AS total,
+      ARRAY_AGG(id ORDER BY value DESC LIMIT 10) AS top_ids
+    FROM base
+    GROUP BY month
+  ),
+  enriched AS (
+    SELECT
+      a.*,
+      LAG(total) OVER (ORDER BY month) AS prev_total,
+      total - LAG(total) OVER (ORDER BY month) AS mom_change
+    FROM aggregated a
+  )
+SELECT * FROM enriched
+ORDER BY month DESC;
+
+-- STRUCT and ARRAY operations
+SELECT
+  STRUCT(1 AS a, 'test' AS b, [1,2,3] AS c) AS simple_struct,
+  STRUCT<x INT64, y STRING, z ARRAY<INT64>>(1, 'test', [1,2,3]) AS typed_struct,
+  [STRUCT(1 AS id, 'a' AS name), STRUCT(2, 'b')] AS struct_array,
+  (SELECT AS STRUCT * FROM table LIMIT 1) AS row_struct;
+
+-- Lambda expressions with ARRAY_TRANSFORM
+SELECT
+  ARRAY_TRANSFORM([1, 2, 3, 4, 5], x -> x * 2) AS doubled,
+  ARRAY_FILTER([1, 2, 3, 4, 5], x -> x > 2) AS filtered,
+  ARRAY_TRANSFORM(
+    ARRAY_FILTER(items, item -> item.active),
+    item -> STRUCT(item.id, UPPER(item.name) AS name)
+  ) AS processed;
+
+
+-- =============================================================================
+-- SECTION 9: KEYWORD BOUNDARY EDGE CASES
+-- =============================================================================
+
+-- Keywords as parts of identifiers (should NOT highlight)
+SELECT
+  select_column,
+  column_from_table,
+  where_clause,
+  and_condition,
+  order_by_field,
+  group_name,
+  join_type,
+  insert_date,
+  update_time,
+  delete_flag
+FROM my_table;
+
+-- Keywords adjacent to operators (should highlight)
+SELECT*FROM t;
+SELECT 1+2 FROM t;
+SELECT a,b,c FROM t;
+SELECT a AND b OR c FROM t;
+
+-- Reserved words that need backticks
+SELECT
+  `select`,
+  `from`,
+  `where`,
+  `group`,
+  `order`,
+  `limit`
+FROM `table`;
+
+
+-- =============================================================================
+-- SECTION 10: OPERATOR EDGE CASES
+-- =============================================================================
+
+SELECT
+  -- Comparison operators
+  a = b AS eq,
+  a != b AS neq1,
+  a <> b AS neq2,
+  a < b AS lt,
+  a > b AS gt,
+  a <= b AS lte,
+  a >= b AS gte,
+
+  -- Logical operators
+  a AND b AS and_op,
+  a OR b AS or_op,
+  NOT a AS not_op,
+
+  -- Arithmetic operators
+  a + b AS add,
+  a - b AS subtract,
+  a * b AS multiply,
+  a / b AS divide,
+  a % b AS modulo,
+
+  -- Bitwise operators
+  a & b AS bit_and,
+  a | b AS bit_or,
+  a ^ b AS bit_xor,
+  ~a AS bit_not,
+  a << 2 AS left_shift,
+  a >> 2 AS right_shift,
+
+  -- Special operators
+  a IS NULL AS is_null,
+  a IS NOT NULL AS is_not_null,
+  a IS TRUE AS is_true,
+  a IS FALSE AS is_false,
+  a IN (1, 2, 3) AS in_list,
+  a NOT IN (1, 2, 3) AS not_in_list,
+  a BETWEEN 1 AND 10 AS between_op,
+  a NOT BETWEEN 1 AND 10 AS not_between,
+  a LIKE '%pattern%' AS like_op,
+  a NOT LIKE '%pattern%' AS not_like,
+
+  -- Array operators
+  1 IN UNNEST(array_col) AS in_array,
+  array1 || array2 AS array_concat,
+
+  -- Struct access
+  struct_col.field AS struct_field,
+  struct_col.nested.deep AS deep_field
+FROM operators_table;
+
+
+-- =============================================================================
+-- SECTION 11: DATA TYPE EDGE CASES
+-- =============================================================================
+
+-- All standard types
+SELECT
+  CAST(x AS INT64) AS to_int,
+  CAST(x AS FLOAT64) AS to_float,
+  CAST(x AS NUMERIC) AS to_numeric,
+  CAST(x AS BIGNUMERIC) AS to_bignumeric,
+  CAST(x AS BOOL) AS to_bool,
+  CAST(x AS STRING) AS to_string,
+  CAST(x AS BYTES) AS to_bytes,
+  CAST(x AS DATE) AS to_date,
+  CAST(x AS TIME) AS to_time,
+  CAST(x AS DATETIME) AS to_datetime,
+  CAST(x AS TIMESTAMP) AS to_timestamp,
+  CAST(x AS INTERVAL) AS to_interval,
+  CAST(x AS JSON) AS to_json,
+  CAST(x AS GEOGRAPHY) AS to_geography;
+
+-- Parameterized types
+SELECT
+  CAST(x AS STRING(100)) AS fixed_string,
+  CAST(x AS BYTES(256)) AS fixed_bytes,
+  CAST(x AS NUMERIC(38, 9)) AS precise_numeric,
+  CAST(x AS BIGNUMERIC(76, 38)) AS precise_bignumeric;
+
+-- Complex types
+SELECT
+  CAST(x AS ARRAY<INT64>) AS int_array,
+  CAST(x AS ARRAY<STRUCT<a INT64, b STRING>>) AS struct_array,
+  CAST(x AS STRUCT<x INT64, y FLOAT64, z STRING>) AS typed_struct,
+  CAST(x AS RANGE<DATE>) AS date_range;
+
+-- SAFE_CAST variations
+SELECT
+  SAFE_CAST(x AS INT64) AS safe_int,
+  SAFE_CAST(y AS DATE) AS safe_date;
+
+
+-- =============================================================================
+-- SECTION 12: DDL EDGE CASES
+-- =============================================================================
+
+-- CREATE TABLE with all options
+CREATE OR REPLACE TABLE `project.dataset.new_table` (
+  id INT64 NOT NULL,
+  name STRING(100),
+  data JSON,
+  location GEOGRAPHY,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+  tags ARRAY<STRING>,
+  metadata STRUCT<key STRING, value STRING>,
+  PRIMARY KEY (id) NOT ENFORCED
+)
+PARTITION BY DATE(created_at)
+CLUSTER BY name, id
+OPTIONS (
+  description = 'Test table',
+  expiration_timestamp = TIMESTAMP '2025-12-31',
+  friendly_name = 'Test'
+);
+
+-- CREATE VIEW
+CREATE OR REPLACE VIEW `project.dataset.my_view`
+OPTIONS (description = 'Filtered view')
+AS SELECT * FROM source_table WHERE active = TRUE;
+
+-- CREATE FUNCTION (SQL UDF)
+CREATE OR REPLACE FUNCTION `project.dataset.double_value`(x INT64)
+RETURNS INT64
+AS (x * 2);
+
+-- CREATE FUNCTION (JavaScript UDF)
+CREATE OR REPLACE FUNCTION `project.dataset.parse_json`(s STRING)
+RETURNS JSON
+LANGUAGE js
+AS r"""
+  return JSON.parse(s);
+""";
+
+-- CREATE PROCEDURE
+CREATE OR REPLACE PROCEDURE `project.dataset.my_procedure`(
+  IN param1 STRING,
+  INOUT param2 INT64,
+  OUT param3 ARRAY<STRING>
+)
+BEGIN
+  SET param2 = param2 + 1;
+  SET param3 = ['result'];
+END;
+
+
+-- =============================================================================
+-- END OF EDGE CASES TEST FILE
+-- =============================================================================

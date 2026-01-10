@@ -1,0 +1,452 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "BigQuery SQL",
+  "scopeName": "source.sql.bigquery",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#identifiers" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#functions" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-dash.sql.bigquery",
+          "match": "--.*$"
+        },
+        {
+          "name": "comment.line.hash.sql.bigquery",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.block.sql.bigquery",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "captures": {
+            "0": { "name": "punctuation.definition.comment.sql.bigquery" }
+          }
+        }
+      ]
+    },
+
+    "strings": {
+      "patterns": [
+        { "include": "#string-multiline-single" },
+        { "include": "#string-multiline-double" },
+        { "include": "#string-raw" },
+        { "include": "#string-bytes" },
+        { "include": "#string-single" },
+        { "include": "#string-double" }
+      ]
+    },
+
+    "string-multiline-single": {
+      "name": "string.quoted.triple.single.sql.bigquery",
+      "begin": "'''",
+      "end": "'''",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+      },
+      "patterns": [
+        { "include": "#string-escapes" }
+      ]
+    },
+
+    "string-multiline-double": {
+      "name": "string.quoted.triple.double.sql.bigquery",
+      "begin": "\"\"\"",
+      "end": "\"\"\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+      },
+      "patterns": [
+        { "include": "#string-escapes" }
+      ]
+    },
+
+    "string-raw": {
+      "patterns": [
+        {
+          "name": "string.quoted.raw.single.sql.bigquery",
+          "begin": "(?i)[rb]?r'",
+          "end": "'",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+          }
+        },
+        {
+          "name": "string.quoted.raw.double.sql.bigquery",
+          "begin": "(?i)[rb]?r\"",
+          "end": "\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+          }
+        }
+      ]
+    },
+
+    "string-bytes": {
+      "patterns": [
+        {
+          "name": "string.quoted.bytes.single.sql.bigquery",
+          "begin": "(?i)b'",
+          "end": "'",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+          },
+          "patterns": [
+            { "include": "#string-escapes" }
+          ]
+        },
+        {
+          "name": "string.quoted.bytes.double.sql.bigquery",
+          "begin": "(?i)b\"",
+          "end": "\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+          },
+          "patterns": [
+            { "include": "#string-escapes" }
+          ]
+        }
+      ]
+    },
+
+    "string-single": {
+      "name": "string.quoted.single.sql.bigquery",
+      "begin": "'",
+      "end": "'",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+      },
+      "patterns": [
+        { "include": "#string-escapes" }
+      ]
+    },
+
+    "string-double": {
+      "name": "string.quoted.double.sql.bigquery",
+      "begin": "\"",
+      "end": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.sql.bigquery" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.sql.bigquery" }
+      },
+      "patterns": [
+        { "include": "#string-escapes" }
+      ]
+    },
+
+    "string-escapes": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.sql.bigquery",
+          "match": "\\\\(?:[abfnrtv\\\\'\"]|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|[0-3]?[0-7]{1,2})"
+        },
+        {
+          "name": "constant.character.escape.sql.bigquery",
+          "match": "''"
+        }
+      ]
+    },
+
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.sql.bigquery",
+          "match": "(?i)(?<![\\w.])(?:\\d+\\.\\d*|\\.\\d+)(?:e[+-]?\\d+)?(?![\\w.])"
+        },
+        {
+          "name": "constant.numeric.float.sql.bigquery",
+          "match": "(?i)(?<![\\w.])\\d+e[+-]?\\d+(?![\\w.])"
+        },
+        {
+          "name": "constant.numeric.integer.sql.bigquery",
+          "match": "(?<![\\w.])\\d+(?![\\w.])"
+        },
+        {
+          "name": "constant.numeric.hex.sql.bigquery",
+          "match": "(?i)(?<![\\w.])0x[0-9a-f]+(?![\\w.])"
+        }
+      ]
+    },
+
+    "identifiers": {
+      "patterns": [
+        {
+          "name": "variable.other.quoted.backtick.sql.bigquery",
+          "begin": "`",
+          "end": "`",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.identifier.begin.sql.bigquery" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.identifier.end.sql.bigquery" }
+          }
+        },
+        {
+          "name": "variable.language.system.sql.bigquery",
+          "match": "@@[a-zA-Z_][a-zA-Z0-9_]*"
+        },
+        {
+          "name": "variable.parameter.sql.bigquery",
+          "match": "@[a-zA-Z_][a-zA-Z0-9_]*"
+        },
+        {
+          "name": "variable.other.pseudocolumn.sql.bigquery",
+          "match": "(?i)\\b(_TABLE_SUFFIX|_PARTITIONTIME|_PARTITIONDATE|_FILE_NAME)\\b"
+        }
+      ]
+    },
+
+    "keywords": {
+      "patterns": [
+        { "include": "#keywords-dml" },
+        { "include": "#keywords-ddl" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-clause" },
+        { "include": "#keywords-logical" },
+        { "include": "#keywords-constants" }
+      ]
+    },
+
+    "keywords-dml": {
+      "name": "keyword.other.dml.sql.bigquery",
+      "match": "(?i)\\b(SELECT|FROM|WHERE|GROUP\\s+BY|HAVING|ORDER\\s+BY|LIMIT|OFFSET|INSERT|INTO|VALUES|UPDATE|SET|DELETE|MERGE|WHEN|MATCHED|NOT\\s+MATCHED|TRUNCATE|USING)\\b"
+    },
+
+    "keywords-ddl": {
+      "name": "keyword.other.ddl.sql.bigquery",
+      "match": "(?i)\\b(CREATE|DROP|ALTER|TABLE|VIEW|SCHEMA|DATASET|FUNCTION|PROCEDURE|MODEL|MATERIALIZED|EXTERNAL|TEMPORARY|TEMP|IF\\s+EXISTS|IF\\s+NOT\\s+EXISTS|OR\\s+REPLACE|OPTIONS|CLUSTER\\s+BY|PARTITION\\s+BY|ROW\\s+ACCESS\\s+POLICY|SEARCH\\s+INDEX|VECTOR\\s+INDEX|SNAPSHOT|CLONE|COPY|EXPORT\\s+DATA|LOAD\\s+DATA)\\b"
+    },
+
+    "keywords-control": {
+      "name": "keyword.control.sql.bigquery",
+      "match": "(?i)\\b(IF|THEN|ELSE|ELSEIF|END\\s+IF|CASE|END|LOOP|END\\s+LOOP|WHILE|DO|FOR|IN|BREAK|LEAVE|CONTINUE|ITERATE|BEGIN|EXCEPTION|RAISE|RETURN|CALL|DECLARE|DEFAULT|EXECUTE\\s+IMMEDIATE|ASSERT)\\b"
+    },
+
+    "keywords-clause": {
+      "name": "keyword.other.clause.sql.bigquery",
+      "match": "(?i)\\b(JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|ON|USING|UNION|INTERSECT|EXCEPT|ALL|DISTINCT|WITH|RECURSIVE|AS|WINDOW|OVER|ROWS|RANGE|BETWEEN|UNBOUNDED|PRECEDING|FOLLOWING|CURRENT\\s+ROW|QUALIFY|PIVOT|UNPIVOT|TABLESAMPLE|SYSTEM|BERNOULLI|PERCENT|REPEATABLE|UNNEST|ARRAY|STRUCT|FOR\\s+SYSTEM_TIME\\s+AS\\s+OF|ROLLUP|CUBE|GROUPING\\s+SETS)\\b"
+    },
+
+    "keywords-logical": {
+      "name": "keyword.operator.logical.sql.bigquery",
+      "match": "(?i)\\b(AND|OR|NOT|IN|BETWEEN|LIKE|IS|EXISTS|ANY|SOME|CONTAINS)\\b"
+    },
+
+    "keywords-constants": {
+      "patterns": [
+        {
+          "name": "constant.language.null.sql.bigquery",
+          "match": "(?i)\\b(NULL)\\b"
+        },
+        {
+          "name": "constant.language.boolean.sql.bigquery",
+          "match": "(?i)\\b(TRUE|FALSE)\\b"
+        }
+      ]
+    },
+
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.sql.bigquery",
+          "match": "(?i)\\b(INT64|INT|SMALLINT|INTEGER|BIGINT|TINYINT|BYTEINT|FLOAT64|FLOAT|NUMERIC|BIGNUMERIC|DECIMAL|BIGDECIMAL|BOOL|BOOLEAN|STRING|BYTES|DATE|TIME|DATETIME|TIMESTAMP|INTERVAL|GEOGRAPHY|JSON|RANGE|ARRAY|STRUCT|RECORD|ANY\\s+TYPE)\\b"
+        }
+      ]
+    },
+
+    "functions": {
+      "patterns": [
+        { "include": "#functions-aggregate" },
+        { "include": "#functions-window" },
+        { "include": "#functions-string" },
+        { "include": "#functions-datetime" },
+        { "include": "#functions-math" },
+        { "include": "#functions-array" },
+        { "include": "#functions-json" },
+        { "include": "#functions-geography" },
+        { "include": "#functions-hll" },
+        { "include": "#functions-kll" },
+        { "include": "#functions-net" },
+        { "include": "#functions-range" },
+        { "include": "#functions-interval" },
+        { "include": "#functions-timeseries" },
+        { "include": "#functions-text" },
+        { "include": "#functions-dlp" },
+        { "include": "#functions-federated" },
+        { "include": "#functions-misc" }
+      ]
+    },
+
+    "functions-aggregate": {
+      "name": "support.function.aggregate.sql.bigquery",
+      "match": "(?i)\\b(ANY_VALUE|ARRAY_AGG|ARRAY_CONCAT_AGG|AVG|BIT_AND|BIT_OR|BIT_XOR|COUNT|COUNTIF|LOGICAL_AND|LOGICAL_OR|MAX|MAX_BY|MIN|MIN_BY|STRING_AGG|SUM|CORR|COVAR_POP|COVAR_SAMP|STDDEV|STDDEV_POP|STDDEV_SAMP|VAR_POP|VAR_SAMP|VARIANCE|APPROX_COUNT_DISTINCT|APPROX_QUANTILES|APPROX_TOP_COUNT|APPROX_TOP_SUM|GROUPING)\\b(?=\\s*\\()"
+    },
+
+    "functions-window": {
+      "name": "support.function.window.sql.bigquery",
+      "match": "(?i)\\b(ROW_NUMBER|RANK|DENSE_RANK|PERCENT_RANK|CUME_DIST|NTILE|LAG|LEAD|FIRST_VALUE|LAST_VALUE|NTH_VALUE|PERCENTILE_CONT|PERCENTILE_DISC)\\b(?=\\s*\\()"
+    },
+
+    "functions-string": {
+      "name": "support.function.string.sql.bigquery",
+      "match": "(?i)\\b(ASCII|BYTE_LENGTH|CHAR_LENGTH|CHARACTER_LENGTH|CHR|CODE_POINTS_TO_BYTES|CODE_POINTS_TO_STRING|COLLATE|CONCAT|CONTAINS_SUBSTR|EDIT_DISTANCE|ENDS_WITH|FORMAT|FROM_BASE32|FROM_BASE64|FROM_HEX|INITCAP|INSTR|LEFT|LENGTH|LOWER|LPAD|LTRIM|NORMALIZE|NORMALIZE_AND_CASEFOLD|OCTET_LENGTH|REGEXP_CONTAINS|REGEXP_EXTRACT|REGEXP_EXTRACT_ALL|REGEXP_INSTR|REGEXP_REPLACE|REGEXP_SUBSTR|REPEAT|REPLACE|REVERSE|RIGHT|RPAD|RTRIM|SAFE_CONVERT_BYTES_TO_STRING|SOUNDEX|SPLIT|STARTS_WITH|STRPOS|SUBSTR|SUBSTRING|TO_BASE32|TO_BASE64|TO_CODE_POINTS|TO_HEX|TRANSLATE|TRIM|UNICODE|UPPER)\\b(?=\\s*\\()"
+    },
+
+    "functions-datetime": {
+      "name": "support.function.datetime.sql.bigquery",
+      "match": "(?i)\\b(CURRENT_DATE|CURRENT_DATETIME|CURRENT_TIME|CURRENT_TIMESTAMP|DATE|DATE_ADD|DATE_DIFF|DATE_FROM_UNIX_DATE|DATE_SUB|DATE_TRUNC|DATETIME|DATETIME_ADD|DATETIME_DIFF|DATETIME_SUB|DATETIME_TRUNC|EXTRACT|FORMAT_DATE|FORMAT_DATETIME|FORMAT_TIME|FORMAT_TIMESTAMP|LAST_DAY|MAKE_DATE|MAKE_DATETIME|MAKE_INTERVAL|MAKE_TIME|MAKE_TIMESTAMP|PARSE_DATE|PARSE_DATETIME|PARSE_TIME|PARSE_TIMESTAMP|TIME|TIME_ADD|TIME_DIFF|TIME_SUB|TIME_TRUNC|TIMESTAMP|TIMESTAMP_ADD|TIMESTAMP_DIFF|TIMESTAMP_MICROS|TIMESTAMP_MILLIS|TIMESTAMP_SECONDS|TIMESTAMP_SUB|TIMESTAMP_TRUNC|UNIX_DATE|UNIX_MICROS|UNIX_MILLIS|UNIX_SECONDS|GENERATE_DATE_ARRAY|GENERATE_TIMESTAMP_ARRAY)\\b(?=\\s*\\()"
+    },
+
+    "functions-math": {
+      "name": "support.function.math.sql.bigquery",
+      "match": "(?i)\\b(ABS|ACOS|ACOSH|ASIN|ASINH|ATAN|ATAN2|ATANH|CBRT|CEIL|CEILING|COS|COSH|COSINE_DISTANCE|COT|COTH|CSC|CSCH|DIV|EUCLIDEAN_DISTANCE|EXP|FLOOR|GREATEST|IEEE_DIVIDE|IS_INF|IS_NAN|LEAST|LN|LOG|LOG10|MOD|PI|POW|POWER|RAND|RANGE_BUCKET|ROUND|SAFE_ADD|SAFE_DIVIDE|SAFE_MULTIPLY|SAFE_NEGATE|SAFE_SUBTRACT|SEC|SECH|SIGN|SIN|SINH|SQRT|TAN|TANH|TRUNC)\\b(?=\\s*\\()"
+    },
+
+    "functions-array": {
+      "name": "support.function.array.sql.bigquery",
+      "match": "(?i)\\b(ARRAY|ARRAY_CONCAT|ARRAY_FILTER|ARRAY_FIRST|ARRAY_INCLUDES|ARRAY_INCLUDES_ALL|ARRAY_INCLUDES_ANY|ARRAY_LAST|ARRAY_LENGTH|ARRAY_REVERSE|ARRAY_SLICE|ARRAY_TO_STRING|ARRAY_TRANSFORM|GENERATE_ARRAY|OFFSET|ORDINAL|SAFE_OFFSET|SAFE_ORDINAL)\\b(?=\\s*\\()"
+    },
+
+    "functions-json": {
+      "name": "support.function.json.sql.bigquery",
+      "match": "(?i)\\b(JSON_ARRAY|JSON_ARRAY_APPEND|JSON_ARRAY_INSERT|JSON_EXTRACT|JSON_EXTRACT_ARRAY|JSON_EXTRACT_SCALAR|JSON_EXTRACT_STRING_ARRAY|JSON_FLATTEN|JSON_KEYS|JSON_OBJECT|JSON_QUERY|JSON_QUERY_ARRAY|JSON_REMOVE|JSON_SET|JSON_STRIP_NULLS|JSON_TYPE|JSON_VALUE|JSON_VALUE_ARRAY|LAX_BOOL|LAX_FLOAT64|LAX_INT64|LAX_STRING|PARSE_JSON|STRING|TO_JSON|TO_JSON_STRING|BOOL|FLOAT64|INT64)\\b(?=\\s*\\()"
+    },
+
+    "functions-geography": {
+      "name": "support.function.geography.sql.bigquery",
+      "match": "(?i)\\b(S2_CELLIDFROMPOINT|S2_COVERINGCELLIDS|ST_ANGLE|ST_AREA|ST_ASBINARY|ST_ASGEOJSON|ST_ASTEXT|ST_AZIMUTH|ST_BOUNDARY|ST_BOUNDINGBOX|ST_BUFFER|ST_BUFFERWITHTOLERANCE|ST_CENTROID|ST_CENTROID_AGG|ST_CLOSESTPOINT|ST_CLUSTERDBSCAN|ST_CONTAINS|ST_CONVEXHULL|ST_COVEREDBY|ST_COVERS|ST_DIFFERENCE|ST_DIMENSION|ST_DISJOINT|ST_DISTANCE|ST_DUMP|ST_DWITHIN|ST_ENDPOINT|ST_EQUALS|ST_EXTENT|ST_EXTERIORRING|ST_GEOGFROM|ST_GEOGFROMGEOJSON|ST_GEOGFROMTEXT|ST_GEOGFROMWKB|ST_GEOGPOINT|ST_GEOGPOINTFROMGEOHASH|ST_GEOHASH|ST_GEOMETRYTYPE|ST_HAUSDORFFDISTANCE|ST_HAUSDORFFDWITHIN|ST_INTERIORRINGS|ST_INTERSECTION|ST_INTERSECTS|ST_INTERSECTSBOX|ST_ISCLOSED|ST_ISCOLLECTION|ST_ISEMPTY|ST_ISRING|ST_LENGTH|ST_LINEINTERPOLATEPOINT|ST_LINELOCATEPOINT|ST_LINESUBSTRING|ST_MAKEELLIPSE|ST_MAKELINE|ST_MAKEPOLYGON|ST_MAKEPOLYGONORIENTED|ST_MAXDISTANCE|ST_NPOINTS|ST_NUMGEOMETRIES|ST_NUMPOINTS|ST_PERIMETER|ST_POINTN|ST_REGIONSTATS|ST_SIMPLIFY|ST_SNAPTOGRID|ST_STARTPOINT|ST_TOUCHES|ST_UNION|ST_UNION_AGG|ST_WITHIN|ST_X|ST_Y)\\b(?=\\s*\\()"
+    },
+
+    "functions-hll": {
+      "name": "support.function.hll.sql.bigquery",
+      "match": "(?i)\\b(HLL_COUNT\\.INIT|HLL_COUNT\\.MERGE|HLL_COUNT\\.MERGE_PARTIAL|HLL_COUNT\\.EXTRACT)\\b(?=\\s*\\()"
+    },
+
+    "functions-kll": {
+      "name": "support.function.kll.sql.bigquery",
+      "match": "(?i)\\b(KLL_QUANTILES\\.INIT_INT64|KLL_QUANTILES\\.INIT_FLOAT64|KLL_QUANTILES\\.MERGE_INT64|KLL_QUANTILES\\.MERGE_FLOAT64|KLL_QUANTILES\\.MERGE_PARTIAL|KLL_QUANTILES\\.MERGE_POINT_INT64|KLL_QUANTILES\\.MERGE_POINT_FLOAT64|KLL_QUANTILES\\.EXTRACT_INT64|KLL_QUANTILES\\.EXTRACT_FLOAT64|KLL_QUANTILES\\.EXTRACT_POINT_INT64|KLL_QUANTILES\\.EXTRACT_POINT_FLOAT64)\\b(?=\\s*\\()"
+    },
+
+    "functions-net": {
+      "name": "support.function.net.sql.bigquery",
+      "match": "(?i)\\b(NET\\.HOST|NET\\.IP_FROM_STRING|NET\\.IP_NET_MASK|NET\\.IP_TO_STRING|NET\\.IP_TRUNC|NET\\.IPV4_FROM_INT64|NET\\.IPV4_TO_INT64|NET\\.PUBLIC_SUFFIX|NET\\.REG_DOMAIN|NET\\.SAFE_IP_FROM_STRING)\\b(?=\\s*\\()"
+    },
+
+    "functions-range": {
+      "name": "support.function.range.sql.bigquery",
+      "match": "(?i)\\b(RANGE|RANGE_CONTAINS|RANGE_END|RANGE_INTERSECT|RANGE_OVERLAPS|RANGE_SESSIONIZE|RANGE_START|GENERATE_RANGE_ARRAY)\\b(?=\\s*\\()"
+    },
+
+    "functions-interval": {
+      "name": "support.function.interval.sql.bigquery",
+      "match": "(?i)\\b(JUSTIFY_DAYS|JUSTIFY_HOURS|JUSTIFY_INTERVAL|MAKE_INTERVAL)\\b(?=\\s*\\()"
+    },
+
+    "functions-timeseries": {
+      "name": "support.function.timeseries.sql.bigquery",
+      "match": "(?i)\\b(DATE_BUCKET|DATETIME_BUCKET|TIMESTAMP_BUCKET|GAP_FILL|APPENDS|CHANGES)\\b(?=\\s*\\()"
+    },
+
+    "functions-text": {
+      "name": "support.function.text.sql.bigquery",
+      "match": "(?i)\\b(BAG_OF_WORDS|TEXT_ANALYZE|TF_IDF)\\b(?=\\s*\\()"
+    },
+
+    "functions-dlp": {
+      "name": "support.function.dlp.sql.bigquery",
+      "match": "(?i)\\b(DLP_DETERMINISTIC_ENCRYPT|DLP_DETERMINISTIC_DECRYPT|DLP_KEY_CHAIN)\\b(?=\\s*\\()"
+    },
+
+    "functions-federated": {
+      "name": "support.function.federated.sql.bigquery",
+      "match": "(?i)\\b(EXTERNAL_QUERY)\\b(?=\\s*\\()"
+    },
+
+    "functions-misc": {
+      "name": "support.function.misc.sql.bigquery",
+      "match": "(?i)\\b(CAST|SAFE_CAST|COALESCE|IF|IFNULL|NULLIF|NVL|HASH|FARM_FINGERPRINT|MD5|SHA1|SHA256|SHA512|ERROR|SESSION_USER|CURRENT_USER|GENERATE_UUID|BIT_COUNT|TYPEOF|SEARCH|PARSE_BIGNUMERIC|PARSE_NUMERIC|KEYS\\.NEW_KEYSET|KEYS\\.ADD_KEY_FROM_RAW_BYTES|KEYS\\.KEYSET_CHAIN|KEYS\\.KEYSET_FROM_JSON|KEYS\\.KEYSET_LENGTH|KEYS\\.KEYSET_TO_JSON|KEYS\\.NEW_WRAPPED_KEYSET|KEYS\\.REWRAP_KEYSET|KEYS\\.ROTATE_KEYSET|KEYS\\.ROTATE_WRAPPED_KEYSET|AEAD\\.DECRYPT_BYTES|AEAD\\.DECRYPT_STRING|AEAD\\.ENCRYPT|DETERMINISTIC_DECRYPT_BYTES|DETERMINISTIC_DECRYPT_STRING|DETERMINISTIC_ENCRYPT|EXTERNAL_OBJECT_TRANSFORM|ML\\.PREDICT|ML\\.EVALUATE|VECTOR_SEARCH)\\b(?=\\s*\\()"
+    },
+
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.comparison.sql.bigquery",
+          "match": "<=|>=|<>|!=|<|>|="
+        },
+        {
+          "name": "keyword.operator.arithmetic.sql.bigquery",
+          "match": "\\+|-|\\*|/|\\|\\|"
+        },
+        {
+          "name": "keyword.operator.bitwise.sql.bigquery",
+          "match": "&|\\||\\^|~|<<|>>"
+        }
+      ]
+    },
+
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.comma.sql.bigquery",
+          "match": ","
+        },
+        {
+          "name": "punctuation.terminator.statement.sql.bigquery",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.accessor.dot.sql.bigquery",
+          "match": "\\."
+        },
+        {
+          "name": "punctuation.section.parens.begin.sql.bigquery",
+          "match": "\\("
+        },
+        {
+          "name": "punctuation.section.parens.end.sql.bigquery",
+          "match": "\\)"
+        },
+        {
+          "name": "punctuation.section.brackets.begin.sql.bigquery",
+          "match": "\\["
+        },
+        {
+          "name": "punctuation.section.brackets.end.sql.bigquery",
+          "match": "\\]"
+        }
+      ]
+    }
+  }
+}

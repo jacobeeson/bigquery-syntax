@@ -1,0 +1,14 @@
+# Dev files (not needed in package)
+.vscode/
+CLAUDE.md
+icon.svg
+
+# Build artifacts
+*.vsix
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node (if dependencies are ever added)
+node_modules/

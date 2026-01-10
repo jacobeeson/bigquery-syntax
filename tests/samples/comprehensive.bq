@@ -1,0 +1,726 @@
+-- ============================================================================
+-- BigQuery Syntax Highlighting Test File
+-- This file contains various BigQuery SQL constructs for visual validation.
+-- ============================================================================
+
+# Alternative line comment style (also valid in BigQuery)
+
+/* 
+   Block comment
+   spanning multiple lines
+*/
+
+-- ============================================================================
+-- SECTION 1: Basic SELECT with various literals
+-- ============================================================================
+
+SELECT
+  -- Numeric literals
+  42 AS integer_literal,
+  3.14159 AS float_literal,
+  1.5e-10 AS scientific_notation,
+  0x1F AS hex_literal,
+  
+  -- String literals
+  'single quoted' AS single_string,
+  "double quoted" AS double_string,
+  '''
+    Multi-line
+    single-quoted string
+  ''' AS multiline_single,
+  """
+    Multi-line
+    double-quoted string
+  """ AS multiline_double,
+  
+  -- Special string prefixes
+  r'\d+\s*regex' AS raw_string,
+  R"also raw" AS raw_double,
+  b'\x00\x01' AS bytes_literal,
+  B"also bytes" AS bytes_double,
+  
+  -- Escape sequences
+  'it''s escaped' AS escaped_quote,
+  "tab\there" AS escape_tab,
+  
+  -- Boolean and NULL
+  TRUE AS bool_true,
+  FALSE AS bool_false,
+  NULL AS null_value;
+
+
+-- ============================================================================
+-- SECTION 2: Identifiers and Variables
+-- ============================================================================
+
+SELECT
+  -- Backtick-quoted identifiers (BigQuery-specific)
+  `project-id.dataset_name.table_name`.column AS qualified_column,
+  `column with spaces` AS weird_column,
+  
+  -- Parameters (BigQuery-specific)
+  @user_id AS param_value,
+  @start_date AS another_param,
+  
+  -- System variables (BigQuery-specific)
+  @@dataset_id AS current_dataset,
+  @@project_id AS current_project,
+  
+  -- Pseudo-columns (BigQuery-specific)
+  _TABLE_SUFFIX,
+  _PARTITIONTIME,
+  _PARTITIONDATE,
+  _FILE_NAME
+FROM `bigquery-public-data.samples.shakespeare`;
+
+
+-- ============================================================================
+-- SECTION 3: Data Types
+-- ============================================================================
+
+CREATE TABLE my_dataset.typed_table (
+  -- Numeric types
+  id INT64,
+  small_num SMALLINT,
+  big_num BIGINT,
+  price NUMERIC(10, 2),
+  precise BIGNUMERIC,
+  ratio FLOAT64,
+  
+  -- String types
+  name STRING,
+  data BYTES,
+  
+  -- Boolean
+  is_active BOOL,
+  
+  -- Date/Time types
+  created_date DATE,
+  created_time TIME,
+  created_at DATETIME,
+  modified_ts TIMESTAMP,
+  duration INTERVAL,
+  
+  -- Complex types
+  metadata JSON,
+  location GEOGRAPHY,
+  date_range RANGE<DATE>,
+  tags ARRAY<STRING>,
+  address STRUCT<street STRING, city STRING, zip INT64>,
+  
+  -- Legacy alias
+  nested_data RECORD
+);
+
+
+-- ============================================================================
+-- SECTION 4: DDL Statements
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS my_project.my_dataset
+OPTIONS (
+  description = 'My dataset',
+  default_table_expiration_days = 7
+);
+
+CREATE OR REPLACE TABLE my_dataset.my_table
+PARTITION BY DATE(created_at)
+CLUSTER BY user_id, category
+OPTIONS (
+  description = 'Main events table',
+  labels = [('env', 'prod')]
+)
+AS SELECT * FROM source_table;
+
+CREATE MATERIALIZED VIEW my_dataset.my_mv
+OPTIONS (enable_refresh = true, refresh_interval_minutes = 60)
+AS
+SELECT user_id, COUNT(*) AS event_count
+FROM my_dataset.events
+GROUP BY user_id;
+
+CREATE TEMPORARY FUNCTION square(x INT64) AS (x * x);
+
+CREATE OR REPLACE FUNCTION my_dataset.add_prefix(s STRING, prefix STRING)
+RETURNS STRING
+AS (CONCAT(prefix, s));
+
+CREATE OR REPLACE PROCEDURE my_dataset.process_data(IN batch_id INT64, OUT row_count INT64)
+BEGIN
+  -- Procedure body
+  SET row_count = (SELECT COUNT(*) FROM my_table WHERE batch = batch_id);
+END;
+
+DROP TABLE IF EXISTS my_dataset.old_table;
+
+ALTER TABLE my_dataset.my_table
+SET OPTIONS (description = 'Updated description');
+
+ALTER TABLE my_dataset.my_table
+ADD COLUMN new_field STRING;
+
+TRUNCATE TABLE my_dataset.my_table;
+
+
+-- ============================================================================
+-- SECTION 5: DML Statements
+-- ============================================================================
+
+INSERT INTO my_dataset.my_table (id, name, created_at)
+VALUES
+  (1, 'Alice', CURRENT_TIMESTAMP()),
+  (2, 'Bob', CURRENT_TIMESTAMP());
+
+UPDATE my_dataset.my_table
+SET name = 'Charlie', modified_at = CURRENT_TIMESTAMP()
+WHERE id = 1;
+
+DELETE FROM my_dataset.my_table
+WHERE created_at < DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY);
+
+MERGE my_dataset.target AS T
+USING my_dataset.source AS S
+ON T.id = S.id
+WHEN MATCHED THEN
+  UPDATE SET T.value = S.value
+WHEN NOT MATCHED THEN
+  INSERT (id, value) VALUES (S.id, S.value);
+
+
+-- ============================================================================
+-- SECTION 6: Query Clauses and JOINs
+-- ============================================================================
+
+WITH 
+  base_data AS (
+    SELECT * FROM source_table
+    WHERE date >= '2024-01-01'
+  ),
+  aggregated AS (
+    SELECT
+      user_id,
+      COUNT(*) AS cnt
+    FROM base_data
+    GROUP BY user_id
+    HAVING COUNT(*) > 10
+  )
+SELECT
+  a.user_id,
+  a.cnt,
+  u.name,
+  u.email
+FROM aggregated a
+INNER JOIN users u ON a.user_id = u.id
+LEFT OUTER JOIN preferences p USING (user_id)
+CROSS JOIN UNNEST(u.tags) AS tag
+WHERE u.is_active = TRUE
+  AND u.country IN ('US', 'CA', 'UK')
+  AND u.age BETWEEN 18 AND 65
+  AND u.name LIKE 'A%'
+  AND u.email IS NOT NULL
+  AND EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)
+ORDER BY a.cnt DESC
+LIMIT 100 OFFSET 0;
+
+-- Set operations
+SELECT * FROM table_a
+UNION ALL
+SELECT * FROM table_b
+INTERSECT DISTINCT
+SELECT * FROM table_c
+EXCEPT DISTINCT
+SELECT * FROM table_d;
+
+-- QUALIFY clause (BigQuery-specific)
+SELECT
+  user_id,
+  event_name,
+  event_time,
+  ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY event_time DESC) AS rn
+FROM events
+QUALIFY rn = 1;
+
+
+-- ============================================================================
+-- SECTION 7: Window Functions
+-- ============================================================================
+
+SELECT
+  user_id,
+  order_date,
+  amount,
+  
+  -- Ranking functions
+  ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS row_num,
+  RANK() OVER (ORDER BY amount DESC) AS rank,
+  DENSE_RANK() OVER (ORDER BY amount DESC) AS dense_rank,
+  PERCENT_RANK() OVER (ORDER BY amount) AS pct_rank,
+  CUME_DIST() OVER (ORDER BY amount) AS cume_dist,
+  NTILE(4) OVER (ORDER BY amount) AS quartile,
+  
+  -- Navigation functions
+  LAG(amount, 1, 0) OVER (PARTITION BY user_id ORDER BY order_date) AS prev_amount,
+  LEAD(amount) OVER (PARTITION BY user_id ORDER BY order_date) AS next_amount,
+  FIRST_VALUE(amount) OVER w AS first_amount,
+  LAST_VALUE(amount) OVER w AS last_amount,
+  NTH_VALUE(amount, 2) OVER w AS second_amount,
+  
+  -- Aggregate functions as window
+  SUM(amount) OVER (PARTITION BY user_id ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total,
+  AVG(amount) OVER (ORDER BY order_date RANGE BETWEEN INTERVAL 7 DAY PRECEDING AND CURRENT ROW) AS moving_avg
+
+FROM orders
+WINDOW w AS (PARTITION BY user_id ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING);
+
+
+-- ============================================================================
+-- SECTION 8: Aggregate Functions
+-- ============================================================================
+
+SELECT
+  category,
+  COUNT(*) AS total_count,
+  COUNTIF(status = 'active') AS active_count,
+  SUM(amount) AS total_amount,
+  AVG(amount) AS avg_amount,
+  MIN(created_at) AS first_created,
+  MAX(created_at) AS last_created,
+  ANY_VALUE(description) AS sample_desc,
+  ARRAY_AGG(DISTINCT tag ORDER BY tag LIMIT 10) AS top_tags,
+  STRING_AGG(name, ', ' ORDER BY name) AS names_list,
+  LOGICAL_AND(is_valid) AS all_valid,
+  LOGICAL_OR(is_urgent) AS any_urgent,
+  BIT_AND(flags) AS common_flags,
+  APPROX_COUNT_DISTINCT(user_id) AS approx_users,
+  APPROX_QUANTILES(amount, 4) AS quartiles,
+  STDDEV(amount) AS std_dev,
+  VARIANCE(amount) AS variance
+FROM items
+GROUP BY category
+HAVING COUNT(*) > 100;
+
+
+-- ============================================================================
+-- SECTION 9: String Functions
+-- ============================================================================
+
+SELECT
+  CONCAT('Hello', ' ', 'World') AS concatenated,
+  FORMAT('%s has %d items', name, count) AS formatted,
+  LENGTH(description) AS str_length,
+  BYTE_LENGTH(description) AS byte_len,
+  LOWER(name) AS lowercase,
+  UPPER(name) AS uppercase,
+  INITCAP(name) AS titlecase,
+  TRIM(name) AS trimmed,
+  LTRIM(name, ' ') AS left_trimmed,
+  RTRIM(name, ' ') AS right_trimmed,
+  LEFT(name, 5) AS first_five,
+  RIGHT(name, 3) AS last_three,
+  SUBSTR(name, 2, 4) AS substring,
+  REPLACE(name, 'old', 'new') AS replaced,
+  REVERSE(name) AS reversed,
+  REPEAT('-', 10) AS separator,
+  LPAD(id_str, 10, '0') AS padded_id,
+  SPLIT(tags_str, ',') AS tags_array,
+  STRPOS(name, '@') AS at_position,
+  STARTS_WITH(email, 'admin') AS is_admin,
+  ENDS_WITH(filename, '.csv') AS is_csv,
+  CONTAINS_SUBSTR(description, 'urgent') AS has_urgent,
+  REGEXP_CONTAINS(email, r'^[a-z]+@') AS valid_email,
+  REGEXP_EXTRACT(url, r'https?://([^/]+)') AS domain,
+  REGEXP_REPLACE(phone, r'[^0-9]', '') AS clean_phone,
+  NORMALIZE(text, NFD) AS normalized,
+  TO_BASE64(data) AS base64_encoded,
+  FROM_BASE64('SGVsbG8=') AS base64_decoded,
+  SAFE_CONVERT_BYTES_TO_STRING(raw_data) AS safe_string
+FROM strings_table;
+
+
+-- ============================================================================
+-- SECTION 10: Date/Time Functions
+-- ============================================================================
+
+SELECT
+  CURRENT_DATE() AS today,
+  CURRENT_TIMESTAMP() AS now,
+  CURRENT_DATETIME() AS now_dt,
+  CURRENT_TIME() AS current_time,
+  
+  DATE('2024-01-15') AS date_literal,
+  TIMESTAMP('2024-01-15 10:30:00') AS ts_literal,
+  
+  DATE_ADD(start_date, INTERVAL 7 DAY) AS week_later,
+  DATE_SUB(end_date, INTERVAL 1 MONTH) AS month_before,
+  DATE_DIFF(end_date, start_date, DAY) AS days_between,
+  DATE_TRUNC(event_date, MONTH) AS month_start,
+  
+  TIMESTAMP_ADD(created_at, INTERVAL 1 HOUR) AS hour_later,
+  TIMESTAMP_DIFF(updated_at, created_at, SECOND) AS seconds_elapsed,
+  TIMESTAMP_TRUNC(event_ts, HOUR) AS hour_bucket,
+  
+  EXTRACT(YEAR FROM created_at) AS year,
+  EXTRACT(MONTH FROM created_at) AS month,
+  EXTRACT(DAYOFWEEK FROM created_at) AS dow,
+  EXTRACT(HOUR FROM created_at) AS hour,
+  
+  FORMAT_DATE('%Y-%m-%d', event_date) AS formatted_date,
+  FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:%S', event_ts) AS formatted_ts,
+  PARSE_DATE('%Y%m%d', date_string) AS parsed_date,
+  PARSE_TIMESTAMP('%Y-%m-%d %H:%M:%S', ts_string) AS parsed_ts,
+  
+  LAST_DAY(event_date, MONTH) AS month_end,
+  MAKE_DATE(2024, 6, 15) AS constructed_date,
+  
+  UNIX_SECONDS(event_ts) AS unix_ts,
+  TIMESTAMP_SECONDS(1704067200) AS from_unix,
+  
+  GENERATE_DATE_ARRAY('2024-01-01', '2024-12-31', INTERVAL 1 MONTH) AS months
+
+FROM events;
+
+
+-- ============================================================================
+-- SECTION 11: Math Functions
+-- ============================================================================
+
+SELECT
+  ABS(-42) AS absolute,
+  SIGN(-5) AS sign_val,
+  ROUND(3.14159, 2) AS rounded,
+  TRUNC(3.9) AS truncated,
+  CEIL(3.1) AS ceiling,
+  FLOOR(3.9) AS floor_val,
+  
+  MOD(17, 5) AS modulo,
+  DIV(17, 5) AS integer_div,
+  POW(2, 10) AS power,
+  SQRT(16) AS square_root,
+  CBRT(27) AS cube_root,
+  EXP(1) AS euler,
+  LN(2.718) AS natural_log,
+  LOG(100, 10) AS log_base_10,
+  LOG10(100) AS log10,
+  
+  SIN(PI() / 2) AS sine,
+  COS(0) AS cosine,
+  TAN(PI() / 4) AS tangent,
+  ASIN(1) AS arc_sine,
+  
+  GREATEST(1, 5, 3) AS max_val,
+  LEAST(1, 5, 3) AS min_val,
+  
+  SAFE_DIVIDE(10, 0) AS safe_div,
+  SAFE_ADD(9223372036854775807, 1) AS safe_add,
+  IEEE_DIVIDE(1.0, 0.0) AS ieee_div,
+  IS_INF(IEEE_DIVIDE(1.0, 0.0)) AS is_infinity,
+  IS_NAN(IEEE_DIVIDE(0.0, 0.0)) AS is_nan,
+  
+  RAND() AS random_val,
+  RANGE_BUCKET(75, [0, 50, 100]) AS bucket
+FROM numbers;
+
+
+-- ============================================================================
+-- SECTION 12: Array and Struct Functions
+-- ============================================================================
+
+SELECT
+  -- Array construction
+  [1, 2, 3, 4, 5] AS int_array,
+  ARRAY<STRING>['a', 'b', 'c'] AS typed_array,
+  GENERATE_ARRAY(1, 10) AS generated,
+  GENERATE_ARRAY(1, 10, 2) AS with_step,
+  
+  -- Array access
+  arr[OFFSET(0)] AS first_element,
+  arr[ORDINAL(1)] AS also_first,
+  arr[SAFE_OFFSET(100)] AS safe_access,
+  
+  -- Array functions
+  ARRAY_LENGTH(arr) AS arr_len,
+  ARRAY_TO_STRING(arr, ',') AS joined,
+  ARRAY_REVERSE(arr) AS reversed,
+  ARRAY_CONCAT([1, 2], [3, 4]) AS concatenated,
+  
+  -- Struct construction
+  STRUCT(1 AS id, 'test' AS name) AS simple_struct,
+  STRUCT<x INT64, y FLOAT64>(10, 20.5) AS typed_struct,
+  
+  -- Struct access
+  my_struct.field_name AS field_value,
+  
+  -- UNNEST
+  tag
+FROM my_table,
+UNNEST(tags) AS tag WITH OFFSET AS pos
+WHERE pos < 5;
+
+-- Array subquery
+SELECT
+  user_id,
+  ARRAY(SELECT item FROM UNNEST(items) AS item WHERE item.price > 100) AS expensive_items
+FROM orders;
+
+
+-- ============================================================================
+-- SECTION 13: JSON Functions
+-- ============================================================================
+
+SELECT
+  -- JSON construction
+  JSON '{"key": "value"}' AS json_literal,
+  TO_JSON(my_struct) AS struct_to_json,
+  JSON_OBJECT('name', 'Alice', 'age', 30) AS json_obj,
+  JSON_ARRAY(1, 2, 3) AS json_arr,
+  
+  -- JSON extraction
+  JSON_VALUE(data, '$.name') AS name,
+  JSON_QUERY(data, '$.address') AS address_obj,
+  JSON_EXTRACT(data, '$.items[0]') AS first_item,
+  JSON_EXTRACT_SCALAR(data, '$.count') AS count_str,
+  JSON_VALUE_ARRAY(data, '$.tags') AS tags,
+  JSON_QUERY_ARRAY(data, '$.items') AS items,
+  
+  -- JSON modification
+  JSON_SET(data, '$.updated', TRUE) AS with_updated,
+  JSON_REMOVE(data, '$.temp') AS without_temp,
+  JSON_STRIP_NULLS(data) AS no_nulls,
+  
+  -- JSON inspection
+  JSON_TYPE(data) AS data_type,
+  JSON_KEYS(data) AS all_keys,
+  
+  -- LAX type conversions
+  LAX_INT64(JSON '"123"') AS lax_int,
+  LAX_FLOAT64(JSON '"3.14"') AS lax_float,
+  LAX_STRING(JSON '123') AS lax_str,
+  LAX_BOOL(JSON '"true"') AS lax_bool
+
+FROM json_table;
+
+
+-- ============================================================================
+-- SECTION 14: Geography Functions
+-- ============================================================================
+
+SELECT
+  -- Geography construction
+  ST_GEOGPOINT(-122.4194, 37.7749) AS sf_point,
+  ST_GEOGFROMTEXT('POINT(-122.4194 37.7749)') AS from_wkt,
+  ST_GEOGFROMGEOJSON('{"type":"Point","coordinates":[-122.4194,37.7749]}') AS from_geojson,
+  ST_MAKELINE(point_a, point_b) AS line,
+  ST_MAKEPOLYGON(ring) AS polygon,
+  
+  -- Measurements
+  ST_DISTANCE(location_a, location_b) AS distance_meters,
+  ST_AREA(polygon) AS area_sq_meters,
+  ST_LENGTH(line) AS length_meters,
+  ST_PERIMETER(polygon) AS perimeter,
+  ST_MAXDISTANCE(geom_a, geom_b) AS max_dist,
+  
+  -- Relationships
+  ST_CONTAINS(region, point) AS point_in_region,
+  ST_INTERSECTS(geom_a, geom_b) AS intersects,
+  ST_WITHIN(inner_geom, outer_geom) AS is_within,
+  ST_DWITHIN(point_a, point_b, 1000) AS within_1km,
+  ST_TOUCHES(geom_a, geom_b) AS touches,
+  
+  -- Transformations
+  ST_CENTROID(polygon) AS center,
+  ST_BUFFER(point, 1000) AS buffered,
+  ST_SIMPLIFY(complex_geom, 100) AS simplified,
+  ST_CONVEXHULL(points) AS hull,
+  ST_UNION(geom_a, geom_b) AS merged,
+  ST_INTERSECTION(geom_a, geom_b) AS overlap,
+  ST_DIFFERENCE(geom_a, geom_b) AS subtracted,
+  
+  -- Accessors
+  ST_X(point) AS longitude,
+  ST_Y(point) AS latitude,
+  ST_NPOINTS(polygon) AS num_points,
+  ST_ASTEXT(geom) AS wkt,
+  ST_ASGEOJSON(geom) AS geojson,
+  ST_GEOHASH(point, 8) AS geohash
+
+FROM geo_table;
+
+
+-- ============================================================================
+-- SECTION 15: Miscellaneous Functions
+-- ============================================================================
+
+SELECT
+  -- Type conversion
+  CAST(price AS STRING) AS price_str,
+  SAFE_CAST(value AS INT64) AS safe_int,
+  
+  -- Null handling
+  COALESCE(a, b, c, 'default') AS first_non_null,
+  IFNULL(value, 0) AS with_default,
+  NULLIF(a, b) AS null_if_equal,
+  NVL(value, 'N/A') AS nvl_result,
+  
+  -- Conditional
+  IF(condition, 'yes', 'no') AS if_result,
+  
+  CASE status
+    WHEN 'active' THEN 1
+    WHEN 'pending' THEN 2
+    ELSE 0
+  END AS status_code,
+  
+  CASE
+    WHEN amount > 1000 THEN 'high'
+    WHEN amount > 100 THEN 'medium'
+    ELSE 'low'
+  END AS tier,
+  
+  -- Hashing
+  FARM_FINGERPRINT(data) AS fingerprint,
+  MD5(data) AS md5_hash,
+  SHA256(data) AS sha256_hash,
+  
+  -- Utility
+  GENERATE_UUID() AS uuid,
+  SESSION_USER() AS current_user,
+  ERROR('Something went wrong') AS error_fn
+
+FROM utility_table;
+
+
+-- ============================================================================
+-- SECTION 16: Scripting
+-- ============================================================================
+
+DECLARE batch_id INT64 DEFAULT 1;
+DECLARE start_date DATE;
+DECLARE row_count INT64;
+
+SET start_date = DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY);
+
+IF batch_id > 0 THEN
+  SET row_count = (SELECT COUNT(*) FROM events WHERE batch = batch_id);
+ELSEIF batch_id = 0 THEN
+  SET row_count = 0;
+ELSE
+  RAISE USING MESSAGE = 'Invalid batch_id';
+END IF;
+
+WHILE row_count > 0 DO
+  -- Process batch
+  SET row_count = row_count - 1;
+END WHILE;
+
+LOOP
+  SET batch_id = batch_id + 1;
+  IF batch_id > 10 THEN
+    BREAK;
+  END IF;
+END LOOP;
+
+FOR record IN (SELECT * FROM my_table LIMIT 10) DO
+  -- Process record
+  SELECT record.id;
+END FOR;
+
+BEGIN
+  INSERT INTO log_table VALUES (CURRENT_TIMESTAMP(), 'Started');
+  CALL my_procedure(batch_id, row_count);
+  INSERT INTO log_table VALUES (CURRENT_TIMESTAMP(), 'Completed');
+EXCEPTION WHEN ERROR THEN
+  INSERT INTO log_table VALUES (CURRENT_TIMESTAMP(), @@error.message);
+END;
+
+ASSERT row_count > 0 AS 'No rows processed';
+
+EXECUTE IMMEDIATE "SELECT * FROM " || table_name;
+
+
+-- ============================================================================
+-- SECTION 17: Advanced Features
+-- ============================================================================
+
+-- Time travel
+SELECT *
+FROM my_table
+FOR SYSTEM_TIME AS OF TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 HOUR);
+
+-- Table sampling
+SELECT *
+FROM large_table TABLESAMPLE SYSTEM (10 PERCENT);
+
+-- PIVOT
+SELECT *
+FROM sales
+PIVOT (
+  SUM(amount) FOR quarter IN ('Q1', 'Q2', 'Q3', 'Q4')
+);
+
+-- UNPIVOT
+SELECT *
+FROM quarterly_sales
+UNPIVOT (
+  amount FOR quarter IN (q1, q2, q3, q4)
+);
+
+-- Recursive CTE
+WITH RECURSIVE org_hierarchy AS (
+  SELECT employee_id, manager_id, 1 AS level
+  FROM employees
+  WHERE manager_id IS NULL
+  
+  UNION ALL
+  
+  SELECT e.employee_id, e.manager_id, h.level + 1
+  FROM employees e
+  JOIN org_hierarchy h ON e.manager_id = h.employee_id
+)
+SELECT * FROM org_hierarchy;
+
+-- EXPORT DATA
+EXPORT DATA
+OPTIONS (
+  uri = 'gs://bucket/path/*.parquet',
+  format = 'PARQUET',
+  overwrite = true
+)
+AS SELECT * FROM my_table;
+
+-- LOAD DATA
+LOAD DATA OVERWRITE my_dataset.my_table
+FROM FILES (
+  format = 'PARQUET',
+  uris = ['gs://bucket/path/*.parquet']
+);
+
+-- ML.PREDICT
+SELECT *
+FROM ML.PREDICT(MODEL my_dataset.my_model, TABLE my_dataset.input_data);
+
+-- VECTOR_SEARCH
+SELECT *
+FROM VECTOR_SEARCH(
+  TABLE my_dataset.embeddings,
+  'embedding_column',
+  (SELECT embedding FROM query_table),
+  top_k => 10
+);
+
+
+-- ============================================================================
+-- SECTION 18: HyperLogLog Functions
+-- ============================================================================
+
+SELECT
+  HLL_COUNT.INIT(user_id) AS hll_sketch,
+  HLL_COUNT.MERGE(hll_sketch) AS merged_sketch,
+  HLL_COUNT.MERGE_PARTIAL(hll_sketch) AS partial_merge,
+  HLL_COUNT.EXTRACT(merged_sketch) AS approx_count
+FROM events
+GROUP BY category;
+
+
+-- ============================================================================
+-- End of test file
+-- ============================================================================
