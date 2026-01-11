@@ -2,7 +2,7 @@
 
 Accurate syntax highlighting for BigQuery Standard SQL.
 
-[![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jacobeeson.bigquery-syntax)](https://marketplace.visualstudio.com/items?itemName=jacobeeson.bigquery-syntax) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)](https://marketplace.visualstudio.com/items?itemName=jacobeeson.bigquery-syntax) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
 ## Features
 
