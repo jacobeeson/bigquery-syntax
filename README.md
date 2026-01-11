@@ -8,7 +8,7 @@ Accurate syntax highlighting for BigQuery Standard SQL.
 ## Features
 
 - **BigQuery Standard SQL** — Full support for modern BigQuery syntax (not Legacy SQL)
-- **~400 functions** across 18 categories including aggregates, window functions, geography, JSON, ML, and more
+- **~490 functions** across 20 categories including AI, aggregates, window functions, geography, JSON, ML, object storage, and more
 - **All data types** — INT64, FLOAT64, NUMERIC, BIGNUMERIC, STRING, BYTES, DATE, TIME, DATETIME, TIMESTAMP, INTERVAL, ARRAY, STRUCT, JSON, GEOGRAPHY, RANGE
 - **String literals** — Single, double, triple-quoted, raw (`r''`), bytes (`b''`), and combinations (`rb''`, `br''`)
 - **Parameters** — Named (`@param`) and system variables (`@@project_id`, `@@dataset_id`)
@@ -65,7 +65,7 @@ Or install directly: [VS Code Marketplace](https://marketplace.visualstudio.com/
 
 This extension provides more comprehensive coverage than alternatives:
 - Actively maintained with current BigQuery syntax
-- Covers newer features: RANGE types, KLL functions, DLP functions, vector distance functions
+- Covers newer features: AI functions, RANGE types, KLL functions, DLP functions, vector distance functions
 - Proper handling of all string literal variants and escape sequences
 
 ## Contributing

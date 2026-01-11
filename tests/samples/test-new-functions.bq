@@ -1,0 +1,255 @@
+-- Test file for 82 newly added BigQuery functions
+-- This file verifies syntax highlighting for all new function additions
+
+-- ============================================================================
+-- AI FUNCTIONS (16 new functions)
+-- ============================================================================
+
+-- AI.GENERATE_TEXT - Generate text using AI models
+SELECT AI.GENERATE_TEXT('Summarize this document') AS summary;
+
+-- AI.CLASSIFY - Classify text into categories
+SELECT AI.CLASSIFY(text_column, model_name) AS category FROM dataset.table;
+
+-- AI.EMBED - Generate embeddings for text
+SELECT AI.EMBED(content) AS embedding FROM documents;
+
+-- AI.GENERATE_EMBEDDING - Alternative embedding generation
+SELECT AI.GENERATE_EMBEDDING(text_field) AS vector FROM records;
+
+-- AI.SIMILARITY - Calculate similarity between vectors
+SELECT AI.SIMILARITY(vec1, vec2) AS similarity_score;
+
+-- AI.SCORE - Score content using AI models
+SELECT AI.SCORE(input_data, model_ref) AS score;
+
+-- AI.FORECAST - AI-powered forecasting
+SELECT AI.FORECAST(time_series_data) AS forecast;
+
+-- AI.DETECT_ANOMALIES - Anomaly detection with AI
+SELECT AI.DETECT_ANOMALIES(metric_values) AS anomalies;
+
+-- AI.EVALUATE - Evaluate AI model performance
+SELECT AI.EVALUATE(model_name, test_data) AS metrics;
+
+-- AI.SEARCH - AI-powered search
+SELECT AI.SEARCH('query text', index_name) AS results;
+
+-- AI.GENERATE - General purpose generation
+SELECT AI.GENERATE('prompt') AS output;
+
+-- AI.GENERATE_BOOL - Generate boolean values
+SELECT AI.GENERATE_BOOL('Is this positive?', text) AS is_positive;
+
+-- AI.GENERATE_DOUBLE - Generate numeric values
+SELECT AI.GENERATE_DOUBLE('Extract price', description) AS price;
+
+-- AI.GENERATE_INT - Generate integer values
+SELECT AI.GENERATE_INT('Count items', text) AS item_count;
+
+-- AI.GENERATE_TABLE - Generate structured data
+SELECT AI.GENERATE_TABLE('Extract fields', content) AS structured_data;
+
+-- AI.IF - Conditional AI generation
+SELECT AI.IF(condition, true_prompt, false_prompt) AS result;
+
+-- ============================================================================
+-- ML FUNCTIONS (62 new functions added to existing category)
+-- ============================================================================
+
+-- Data Preprocessing Functions
+SELECT ML.BUCKETIZE(value, [0, 10, 20, 30]) AS bucket FROM data;
+SELECT ML.IMPUTER(features) AS imputed_features FROM training_data;
+SELECT ML.MIN_MAX_SCALER(numerical_features) AS scaled FROM dataset;
+SELECT ML.MAX_ABS_SCALER(features) AS scaled FROM data;
+SELECT ML.ROBUST_SCALER(features) AS scaled FROM data;
+SELECT ML.STANDARD_SCALER(features) AS scaled FROM data;
+SELECT ML.NORMALIZER(feature_vector) AS normalized FROM data;
+SELECT ML.QUANTILE_BUCKETIZE(values, 10) AS buckets FROM data;
+
+-- Feature Engineering
+SELECT ML.FEATURE_CROSS(feature1, feature2) AS crossed FROM data;
+SELECT ML.FEATURE_INFO(model_name) AS feature_metadata;
+SELECT ML.POLYNOMIAL_EXPAND(features, 2) AS expanded FROM data;
+SELECT ML.HASH_BUCKETIZE(categorical_col, 100) AS hashed FROM data;
+SELECT ML.LABEL_ENCODER(category_col) AS encoded FROM data;
+SELECT ML.ONE_HOT_ENCODER(category) AS one_hot FROM data;
+SELECT ML.MULTI_HOT_ENCODER(array_col) AS multi_hot FROM data;
+
+-- Text Processing
+SELECT ML.BAG_OF_WORDS(text_column) AS bow FROM documents;
+SELECT ML.TF_IDF(text_array) AS tfidf FROM corpus;
+SELECT ML.NGRAMS(text, 2, 3) AS ngrams FROM documents;
+
+-- Image Processing
+SELECT ML.CONVERT_COLOR_SPACE(image, 'RGB', 'GRAYSCALE') AS converted;
+SELECT ML.CONVERT_IMAGE_TYPE(image_bytes, 'PNG') AS converted;
+SELECT ML.DECODE_IMAGE(image_bytes) AS decoded_image;
+SELECT ML.RESIZE_IMAGE(image, 224, 224) AS resized;
+SELECT ML.ANNOTATE_IMAGE(image_uri) AS annotations;
+
+-- Model Evaluation and Analysis
+SELECT ML.CONFUSION_MATRIX(model_ref, evaluation_data) AS matrix;
+SELECT ML.ROC_CURVE(model_name, test_data) AS roc;
+SELECT ML.ARIMA_EVALUATE(model_name, evaluation_data) AS metrics;
+SELECT ML.RECONSTRUCTION_LOSS(model_name, data) AS loss;
+
+-- Model Information and Metadata
+SELECT ML.TRAINING_INFO(model_name) AS training_metadata;
+SELECT ML.TRIAL_INFO(model_name) AS trial_data;
+SELECT ML.GET_INSIGHTS(model_name) AS insights;
+SELECT ML.HOLIDAY_INFO('US', date_range) AS holidays;
+SELECT ML.FEATURE_IMPORTANCE(model_name) AS importance;
+
+-- Model Predictions and Inference
+SELECT ML.FORECAST(model_name, horizon => 30) AS forecast;
+SELECT ML.RECOMMEND(model_ref, user_id) AS recommendations;
+SELECT ML.DETECT_ANOMALIES(model_name, input_data) AS anomalies;
+SELECT ML.GENERATE_TEXT(model_ref, prompt) AS generated;
+SELECT ML.GENERATE_EMBEDDING(model_name, content) AS embedding;
+SELECT ML.PROCESS_DOCUMENT(model_ref, document_uri) AS processed;
+SELECT ML.TRANSCRIBE(model_name, audio_uri) AS transcript;
+SELECT ML.TRANSLATE(model_ref, text, target_language) AS translated;
+SELECT ML.UNDERSTAND_TEXT(model_name, text) AS entities;
+
+-- Model Explainability
+SELECT ML.EXPLAIN_PREDICT(model_name, input_data) AS explanation;
+SELECT ML.EXPLAIN_FORECAST(model_name, forecast_data) AS explanation;
+SELECT ML.GLOBAL_EXPLAIN(model_name) AS global_explanation;
+
+-- Model Weights and Components
+SELECT ML.WEIGHTS(model_name) AS weights;
+SELECT ML.ADVANCED_WEIGHTS(model_name) AS detailed_weights;
+SELECT ML.CENTROIDS(model_name) AS cluster_centers;
+SELECT ML.PRINCIPAL_COMPONENTS(model_name) AS components;
+SELECT ML.PRINCIPAL_COMPONENT_INFO(model_name) AS pca_info;
+SELECT ML.ARIMA_COEFFICIENTS(model_name) AS coefficients;
+
+-- Data Validation and Quality
+SELECT ML.DESCRIBE_DATA(table_ref) AS statistics;
+SELECT ML.VALIDATE_DATA_DRIFT(baseline_table, current_table) AS drift;
+SELECT ML.VALIDATE_DATA_SKEW(training_data, serving_data) AS skew;
+SELECT ML.TFDV_DESCRIBE(table_name) AS schema;
+SELECT ML.TFDV_VALIDATE(statistics, schema) AS anomalies;
+
+-- Utility Functions
+SELECT ML.DISTANCE(vector1, vector2, 'EUCLIDEAN') AS distance;
+SELECT ML.LP_NORM(vector, p => 2) AS norm;
+SELECT ML.TRANSFORM(transformer_name, input_data) AS transformed;
+
+-- Time Series Feature Store
+SELECT ML.FEATURES_AT_TIME(feature_view, entity_id, timestamp) AS features;
+SELECT ML.ENTITY_FEATURES_AT_TIME(feature_view, entities, timestamp) AS features;
+
+-- ============================================================================
+-- OBJECT STORAGE FUNCTIONS (3 new functions)
+-- ============================================================================
+
+-- OBJ.FETCH_METADATA - Fetch metadata from Cloud Storage objects
+SELECT OBJ.FETCH_METADATA('gs://my-bucket/file.csv') AS metadata;
+
+-- OBJ.GET_ACCESS_URL - Get access URL for objects
+SELECT OBJ.GET_ACCESS_URL(object_reference) AS signed_url;
+
+-- OBJ.MAKE_REF - Create object reference
+SELECT OBJ.MAKE_REF('gs://bucket/path/to/file.txt') AS obj_ref;
+
+-- ============================================================================
+-- BI FUNCTIONS (2 new functions)
+-- ============================================================================
+
+-- BI_CAPACITIES - Query BI Engine capacity information
+SELECT * FROM BI_CAPACITIES();
+
+-- BI_CAPACITY_CHANGES - Query BI Engine capacity changes
+SELECT * FROM BI_CAPACITY_CHANGES(
+  start_time => TIMESTAMP('2024-01-01'),
+  end_time => TIMESTAMP('2024-01-31')
+);
+
+-- ============================================================================
+-- VECTOR INDEX FUNCTIONS (1 new function)
+-- ============================================================================
+
+-- VECTOR_INDEX.STATISTICS - Get statistics about vector indexes
+SELECT VECTOR_INDEX.STATISTICS('my_project.my_dataset.my_vector_index') AS stats;
+
+-- ============================================================================
+-- COMBINED USAGE EXAMPLES
+-- ============================================================================
+
+-- Example 1: AI-powered text analysis with ML preprocessing
+WITH processed_data AS (
+  SELECT
+    id,
+    ML.STANDARD_SCALER(numerical_features) AS scaled_features,
+    ML.BAG_OF_WORDS(text_content) AS bow_features
+  FROM raw_data
+)
+SELECT
+  id,
+  AI.CLASSIFY(text_content, 'my_classification_model') AS category,
+  AI.GENERATE_TEXT('Summarize: ' || text_content) AS summary,
+  scaled_features,
+  bow_features
+FROM processed_data;
+
+-- Example 2: Feature engineering pipeline
+SELECT
+  ML.FEATURE_CROSS(
+    ML.ONE_HOT_ENCODER(category_a),
+    ML.ONE_HOT_ENCODER(category_b)
+  ) AS crossed_features,
+  ML.POLYNOMIAL_EXPAND(
+    ML.ROBUST_SCALER(numerical_cols),
+    2
+  ) AS poly_features
+FROM training_data;
+
+-- Example 3: Model evaluation workflow
+SELECT
+  ML.CONFUSION_MATRIX(model, test_data) AS confusion,
+  ML.ROC_CURVE(model, test_data) AS roc,
+  ML.FEATURE_IMPORTANCE(model) AS importance,
+  ML.GLOBAL_EXPLAIN(model) AS explanation
+FROM ML.TRAINING_INFO('my_model');
+
+-- Example 4: Object storage integration
+WITH object_data AS (
+  SELECT
+    uri,
+    OBJ.FETCH_METADATA(uri) AS metadata,
+    OBJ.GET_ACCESS_URL(OBJ.MAKE_REF(uri)) AS access_url
+  FROM external_files
+)
+SELECT * FROM object_data WHERE metadata.size > 1000000;
+
+-- Example 5: Vector search with statistics
+SELECT
+  query_id,
+  AI.EMBED(query_text) AS query_embedding,
+  VECTOR_INDEX.STATISTICS('my_vector_index') AS index_stats
+FROM search_queries;
+
+-- Example 6: Time series analysis
+SELECT
+  timestamp,
+  ML.FEATURES_AT_TIME(feature_view, entity_id, timestamp) AS features,
+  ML.FORECAST(forecast_model, horizon => 7) AS predictions,
+  AI.DETECT_ANOMALIES(metric_values) AS anomalies
+FROM time_series_data;
+
+-- Example 7: Data quality and validation
+SELECT
+  ML.DESCRIBE_DATA(training_table) AS baseline_stats,
+  ML.VALIDATE_DATA_DRIFT(baseline_table, current_table) AS drift_report,
+  ML.TFDV_DESCRIBE(current_table) AS current_schema
+FROM data_quality_checks;
+
+-- Example 8: Multi-modal AI processing
+SELECT
+  ML.ANNOTATE_IMAGE(image_uri) AS image_annotations,
+  ML.TRANSCRIBE(audio_model, audio_uri) AS audio_text,
+  AI.GENERATE_TEXT('Describe: ' || combined_content) AS description,
+  ML.PROCESS_DOCUMENT(doc_model, document_uri) AS doc_entities
+FROM multimedia_content;
