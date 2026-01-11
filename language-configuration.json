@@ -24,5 +24,11 @@
     ["'", "'"],
     ["\"", "\""],
     ["`", "`"]
-  ]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*(BEGIN|CASE|WITH(\\s+RECURSIVE)?|CREATE\\s+(FUNCTION|PROCEDURE))\\b",
+      "end": "^\\s*END\\b"
+    }
+  }
 }

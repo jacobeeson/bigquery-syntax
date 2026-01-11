@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0] - 2026-01-11
+
+### Added
+- Code folding support for BEGIN/END blocks, CASE expressions, and CREATE FUNCTION/PROCEDURE bodies
+- Enhanced code navigation in large BigQuery query files through intelligent structure folding
+
+### Changed
+- Improved `language-configuration.json` with folding markers for BigQuery-specific syntax constructs
+
 ## [1.1.0] - 2026-01-10
 
 ### Added

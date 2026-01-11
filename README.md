@@ -2,17 +2,17 @@
 
 Accurate syntax highlighting for BigQuery Standard SQL.
 
-[![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jacobeeson.bigquery-syntax)](https://marketplace.visualstudio.com/items?itemName=jacobeeson.bigquery-syntax)
+[![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jacobeeson.bigquery-syntax)](https://marketplace.visualstudio.com/items?itemName=jacobeeson.bigquery-syntax) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
 ## Features
 
-- **BigQuery Standard SQL** — Full support for modern BigQuery syntax (not Legacy SQL)
-- **~490 functions** across 20 categories including AI, aggregates, window functions, geography, JSON, ML, object storage, and more
-- **All data types** — INT64, FLOAT64, NUMERIC, BIGNUMERIC, STRING, BYTES, DATE, TIME, DATETIME, TIMESTAMP, INTERVAL, ARRAY, STRUCT, JSON, GEOGRAPHY, RANGE
-- **String literals** — Single, double, triple-quoted, raw (`r''`), bytes (`b''`), and combinations (`rb''`, `br''`)
-- **Parameters** — Named (`@param`) and system variables (`@@project_id`, `@@dataset_id`)
-- **Identifiers** — Backtick-quoted identifiers with full Unicode support
-- **Comments** — All styles: `--`, `#`, and `/* */`
+- **BigQuery Standard SQL** — Full support for modern syntax (not Legacy SQL)
+- **490+ functions** — AI, ML, window functions, aggregates, geography, JSON, arrays, strings, math, and more
+- **Code folding** — Collapse BEGIN/END blocks, CASE expressions, CTEs, and function definitions
+- **All data types** — INT64, STRING, ARRAY, STRUCT, JSON, GEOGRAPHY, RANGE, and all numeric/temporal types
+- **String variants** — Single, double, raw (`r''`), bytes (`b''`), multi-line (`'''`), and combinations
+- **BigQuery identifiers** — Backticks, parameters (`@param`), system variables (`@@project_id`)
+- **All comment styles** — `--`, `#`, and `/* */`
 
 ## File Associations
 
@@ -44,6 +44,18 @@ Or for specific paths only:
 }
 ```
 
+## Usage
+
+BigQuery syntax highlighting activates automatically for `.bq` and `.bqsql` files.
+
+**For `.sql` files:** Configure file associations (see above) or manually select the language:
+1. Open your `.sql` file
+2. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
+3. Type "Change Language Mode"
+4. Select "BigQuery SQL"
+
+**Code Folding:** Click the collapse arrows next to BEGIN/END blocks, CASE expressions, CTEs, and function definitions to fold code sections.
+
 ## Installation
 
 ### VS Code Marketplace
@@ -60,33 +72,27 @@ Or install directly: [VS Code Marketplace](https://marketplace.visualstudio.com/
 1. Download the `.vsix` file from [Releases](https://github.com/jacobeeson/bigquery-syntax/releases)
 2. In VS Code: Extensions → ⋯ → Install from VSIX...
 
-## Comparison
+## Why This Extension?
 
-This extension provides more comprehensive coverage than alternatives:
-- Actively maintained with current BigQuery syntax
-- Covers newer features: AI functions, RANGE types, KLL functions, DLP functions, vector distance functions
-- Proper handling of all string literal variants and escape sequences
+**Comprehensive Coverage:**
+- **490+ functions** - Most complete BigQuery function library available
+- **Latest features** - AI.*, ML.*, OBJ.* functions from January 2026 release
+- **Quarterly updates** - Synchronized with Google's BigQuery feature releases
+
+**BigQuery-Specific Syntax:**
+- System variables: `@@project_id`, `@@dataset_id`, `@@time_zone`
+- Pseudo-columns: `_TABLE_SUFFIX`, `_PARTITIONTIME`, `_PARTITIONDATE`
+- Time travel: `FOR SYSTEM_TIME AS OF`
+- Scripting: `BEGIN/END`, `EXCEPTION`, `LOOP`, `DECLARE`
+- String variants: Raw strings (`r''`), bytes (`b''`), multi-line (`'''`)
+
+**Better Than Alternatives:**
+- Generic SQL extensions miss BigQuery-specific constructs
+- Other BigQuery extensions have incomplete function coverage or outdated syntax
+- This extension is actively maintained with test-driven development
 
 ## License
 
-MIT License
+MIT License - see [LICENSE.txt](LICENSE.txt) for full details.
 
-Copyright (c) 2026 jacobeeson
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Copyright © 2026 jacobeeson
