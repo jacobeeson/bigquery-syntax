@@ -1,5 +1,6 @@
 # Dev files (not needed in package)
 .vscode/
+.claude/
 CLAUDE.md
 icon.svg
 
