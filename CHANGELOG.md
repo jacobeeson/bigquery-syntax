@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.1] - 2026-01-12
+
+### Added
+- Syntax highlighting for table snapshot decorators (`@-N` for version-based, `@YYYYMMDD` for date-based snapshots)
+
+### Changed
+- Improved identifier parsing to distinguish snapshot decorators from parameters and system variables
+- **Extension display name simplified to "BigQuery Syntax"** (formerly "BigQuery Syntax Highlighting")
+  - Internal package name remains unchanged (`bigquery-syntax`)
+  - Existing installs will update automatically
+  - Aligns with VS Code extension naming conventions
+
+### Technical Notes
+- New scope: `storage.modifier.snapshot.sql.bigquery` for theme compatibility
+- Pattern placed before parameter matching to ensure correct precedence
+
 ## [1.2.0] - 2026-01-11
 
 ### Added

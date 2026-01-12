@@ -1,7 +1,7 @@
 .vscode/
 .claude/
 .github/
-CLAUDE.md
+.tooling/
 icon.svg
 *.vsix
 .gitignore

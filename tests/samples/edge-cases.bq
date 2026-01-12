@@ -732,5 +732,53 @@ END;
 
 
 -- =============================================================================
+-- SECTION 13: SNAPSHOT DECORATORS (Added in v1.2.1)
+-- =============================================================================
+
+-- Version-based snapshots (N versions back)
+SELECT * FROM my_table@-1;                          -- 1 version back
+SELECT * FROM orders@-7;                            -- 7 versions back
+SELECT * FROM events@-100;                          -- 100 versions back
+
+-- Date-based snapshots (YYYYMMDD format)
+SELECT * FROM my_table@20240101;                    -- Specific date
+SELECT * FROM orders@20231225;                      -- Christmas 2023
+SELECT * FROM events@20260112;                      -- Today's snapshot
+
+-- With dot notation (qualified names)
+SELECT * FROM dataset.table@-1;                     -- Dataset qualified
+SELECT * FROM project.dataset.table@20240101;       -- Fully qualified
+
+-- In backtick-quoted identifiers
+SELECT * FROM `my-table@-1`;                        -- Backtick with snapshot
+SELECT * FROM `project-id.dataset_name.table@-1`;   -- Fully qualified backtick
+
+-- Mixed with aliases
+SELECT t.* FROM orders@-1 AS t;                     -- With alias
+SELECT * FROM events@20240101 e WHERE e.id > 100;   -- Inline alias
+
+-- In JOINs
+SELECT *
+FROM orders@-1 o
+JOIN customers c ON o.customer_id = c.id;
+
+SELECT *
+FROM current_orders
+LEFT JOIN orders@20231231 previous ON current_orders.id = previous.id;
+
+-- With FOR SYSTEM_TIME AS OF (different snapshot syntax)
+SELECT * FROM my_table FOR SYSTEM_TIME AS OF TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 HOUR);
+
+-- Edge cases that should NOT match as snapshot decorators
+SELECT @param;                                      -- Parameter (not snapshot)
+SELECT @@project_id;                                -- System variable (not snapshot)
+SELECT email FROM users WHERE email LIKE '%@domain.com';  -- Email address (not snapshot)
+SELECT * FROM table WHERE id = @123;                -- Parameter @123 (not snapshot, starts with digit)
+
+-- Valid snapshot decorator patterns only
+SELECT COUNT(*) FROM table@-1 WHERE created_at > '2024-01-01';
+
+
+-- =============================================================================
 -- END OF EDGE CASES TEST FILE
 -- =============================================================================

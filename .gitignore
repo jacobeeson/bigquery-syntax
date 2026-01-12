@@ -1,7 +1,7 @@
 # Dev files (not needed in package)
 .vscode/
 .claude/
-CLAUDE.md
+.tooling/
 icon.svg
 
 # Build artifacts

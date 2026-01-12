@@ -203,6 +203,11 @@
     "identifiers": {
       "patterns": [
         {
+          "name": "storage.modifier.snapshot.sql.bigquery",
+          "match": "(?<=\\w)@(?:-\\d+|\\d{8})\\b",
+          "comment": "Table snapshot decorators: @-N (versions back) or @YYYYMMDD (date snapshots)"
+        },
+        {
           "name": "variable.other.quoted.backtick.sql.bigquery",
           "begin": "`",
           "end": "`",
